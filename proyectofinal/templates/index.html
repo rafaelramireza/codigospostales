@@ -1,0 +1,137 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Búsqueda de Códigos Postales</title>
+    <!-- Se carga la hoja de estilos Bootstrap -->
+    <link href="{% static 'bootstrap.min.css' %}" rel="stylesheet">
+</head>
+<body>
+    <h1>Búsqueda de Códigos Postales</h1>
+
+    <form action="" method="post">
+        {% csrf_token %}
+        <label for="nombre_estado">Estado:</label>
+        <select name="nombre_estado" id="nombre_estado" class="form-control" >
+            {% for estado in estados %}
+                <!-- Se generan las opciones para seleccionar el estado -->
+                <option value="{{ estado }}">{{ estado }}</option>
+            {% endfor %}
+        </select>
+        
+        <label for="nombre_municipio">Municipio:</label>
+        <select name="nombre_municipio" id="nombre_municipio" class="form-control">
+            <!-- Opciones de municipio se agregarán dinámicamente mediante JavaScript -->
+        </select>
+        
+        <label for="nombre_asentamiento">Asentamiento:</label>
+        <select name="nombre_asentamiento" id="nombre_asentamiento" class="form-control">
+            <!-- Opciones de asentamiento se agregarán dinámicamente mediante JavaScript -->
+        </select>
+        
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
+
+    <!-- Sección para mostrar los resultados de la búsqueda -->
+    {% if results %}
+    <h2>Resultados:</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Código Postal</th>
+                <th>Asentamiento</th>
+                <th>Tipo de asentamiento</th>
+                <th>Municipio</th>
+                <th>Estado</th>
+                <th>Ciudad</th>
+                <th>Detalle CP</th>
+                <th>Codigo de Estado</th>
+                <th>Codigo de oficina</th>
+                <th>Codigo CP</th>
+                <th>Codigo Tipo de asentamiento</th>
+                <th>Codigo Municipio</th>
+                <th>id Asentamiento</th>
+                <th>Zona</th>
+                <th>Clave de la Ciudad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+                <tr>
+                    <!-- Se muestran los resultados obtenidos -->
+                    <td>{{ result.0 }}</td>
+                    <td>{{ result.1 }}</td>
+                    <td>{{ result.2 }}</td>
+                    <td>{{ result.3 }}</td>
+                    <td>{{ result.4 }}</td>
+                    <td>{{ result.5 }}</td>
+                    <td>{{ result.6 }}</td>
+                    <td>{{ result.7 }}</td>
+                    <td>{{ result.8 }}</td>
+                    <td>{{ result.9 }}</td>
+                    <td>{{ result.10 }}</td>
+                    <td>{{ result.11 }}</td>
+                    <td>{{ result.12 }}</td>
+                    <td>{{ result.13 }}</td>
+                    <td>{{ result.14 }}</td>
+                    <td>{{ result.15 }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- Se incluyen los scripts JavaScript de jQuery y Bootstrap -->
+    <script src="{% static 'jquery-3.5.1.js' %}"></script>
+    <script src="{% static 'bootstrap.bundle.min.js' %}"></script>
+    
+    <script>
+        // Script para realizar solicitudes AJAX y actualizar los select de municipio y asentamiento
+        $(document).ready(function(){
+            $('#nombre_estado').change(function(){
+                var selectedEstado = $(this).val();
+                // Se realiza una solicitud AJAX para obtener los municipios correspondientes al estado seleccionado
+                $.ajax({
+                    url: '{% url "get_municipios_by_estado" %}',
+                    type: 'GET',
+                    data: {
+                        estado: selectedEstado
+                    },
+                    success: function(data){
+                        $('#nombre_municipio').empty();
+                        // Se agregan las opciones de municipio al select
+                        $.each(data, function(index, municipio){
+                            $('#nombre_municipio').append('<option value="' + municipio + '">' + municipio + '</option>');
+                        });
+                    }
+                });
+            });
+    
+            $('#nombre_municipio').change(function(){
+                var selectedMunicipio = $(this).val();
+                var selectedEstado = $('#nombre_estado').val();
+                // Se realiza una solicitud AJAX para obtener los asentamientos correspondientes al municipio seleccionado
+                $.ajax({
+                    url: '{% url "get_asentamientos_by_municipio" %}',
+                    type: 'GET',
+                    data: {
+                        estado: selectedEstado,
+                        municipio: selectedMunicipio
+                    },
+                    success: function(data){
+                        $('#nombre_asentamiento').empty();
+                        // Se agregan las opciones de asentamiento al select
+                        $.each(data, function(index, asentamiento){
+                            $('#nombre_asentamiento').append('<option value="' + asentamiento + '">' + asentamiento + '</option>');
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+    
+</body>
+</html>
